@@ -20,3 +20,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/test', [CalculationsController::class, 'testMethod']);
+
+Route::post('/calculate-net-to-gross', [CalculationsController::class, 'calculateNetToGross']);
+Route::post('/calculate-gross-to-net', [CalculationsController::class, 'calculateGrossToNet']);
+Route::post('/calculate-ac-oc', [CalculationsController::class, 'calculateAcOc']);

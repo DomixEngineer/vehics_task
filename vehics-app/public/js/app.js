@@ -17666,12 +17666,15 @@ __webpack_require__.r(__webpack_exports__);
   name: 'HelloVue',
   data: function data() {
     return {
+      ocAcPrice: '',
+      vat: 23,
       premiumCalculator: {
-        nettoPrice: '',
+        netPrice: '',
         grossPrice: '',
         yearProduction: '',
         gpsIncluded: true,
-        ratesCount: 1
+        divideInInstallments: 0,
+        countOfInstallments: 2
       }
     };
   },
@@ -17681,8 +17684,23 @@ __webpack_require__.r(__webpack_exports__);
         console.log(data.data);
       });
     },
+    // Calculate dynamiclly Netto price (from gross value)
+    calculateNetto: function calculateNetto() {
+      var _this = this;
+      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/calculate-gross-to-net', this.premiumCalculator).then(function (data) {
+        _this.premiumCalculator.netPrice = data.data;
+      });
+    },
+    // Calculate dynamiclly Gross price (from Net value)
+    calculateGross: function calculateGross() {
+      var _this2 = this;
+      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/calculate-net-to-gross', this.premiumCalculator).then(function (data) {
+        _this2.premiumCalculator.grossPrice = data.data;
+      });
+    },
+    // Final AC / OC Calculations
     calculateRates: function calculateRates() {
-      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/calculate', this.premiumCalculator).then(function (data) {
+      axios__WEBPACK_IMPORTED_MODULE_0__["default"].post('/api/calculate-ac-oc', this.premiumCalculator).then(function (data) {
         console.log(data.data);
       });
     }
@@ -17708,40 +17726,73 @@ var _hoisted_1 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementV
 var _hoisted_2 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Cena brutto", -1 /* HOISTED */);
 var _hoisted_3 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Rok produkcji samochodu", -1 /* HOISTED */);
 var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Czy GPS ma być zawarty", -1 /* HOISTED */);
-var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Na ile rat podzielić", -1 /* HOISTED */);
-var _hoisted_6 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("button", null, "OBLICZ", -1 /* HOISTED */);
-
+var _hoisted_5 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Czy dzielić składkę na raty", -1 /* HOISTED */);
+var _hoisted_6 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "1"
+}, "Tak", -1 /* HOISTED */);
+var _hoisted_7 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "0"
+}, "Nie", -1 /* HOISTED */);
+var _hoisted_8 = [_hoisted_6, _hoisted_7];
+var _hoisted_9 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("p", null, "Na ile rat rozłożyć", -1 /* HOISTED */);
+var _hoisted_10 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "2"
+}, "2 raty", -1 /* HOISTED */);
+var _hoisted_11 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("option", {
+  value: "4"
+}, "4 raty", -1 /* HOISTED */);
+var _hoisted_12 = [_hoisted_10, _hoisted_11];
+var _hoisted_13 = {
+  key: 1
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("form", {
-    onSubmit: _cache[5] || (_cache[5] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function ($event) {
+    onSubmit: _cache[8] || (_cache[8] = (0,vue__WEBPACK_IMPORTED_MODULE_0__.withModifiers)(function ($event) {
       return $options.calculateRates();
     }, ["prevent"]))
   }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_1, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "text",
+    type: "number",
+    step: "0.01",
     "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
-      return $data.premiumCalculator.nettoPrice = $event;
+      return $data.premiumCalculator.netPrice = $event;
+    }),
+    onChange: _cache[1] || (_cache[1] = function ($event) {
+      return $options.calculateGross();
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.nettoPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "text",
-    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
-      return $data.premiumCalculator.nettoPrice = $event;
-    })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.nettoPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "text",
+  }, null, 544 /* HYDRATE_EVENTS, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.netPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_2, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "number",
+    step: "0.01",
     "onUpdate:modelValue": _cache[2] || (_cache[2] = function ($event) {
-      return $data.premiumCalculator.nettoPrice = $event;
+      return $data.premiumCalculator.grossPrice = $event;
+    }),
+    onChange: _cache[3] || (_cache[3] = function ($event) {
+      return $options.calculateNetto();
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.nettoPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "text",
-    "onUpdate:modelValue": _cache[3] || (_cache[3] = function ($event) {
-      return $data.premiumCalculator.nettoPrice = $event;
-    })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.nettoPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+  }, null, 544 /* HYDRATE_EVENTS, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.grossPrice]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_3, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
     type: "text",
     "onUpdate:modelValue": _cache[4] || (_cache[4] = function ($event) {
-      return $data.premiumCalculator.nettoPrice = $event;
+      return $data.premiumCalculator.yearProduction = $event;
     })
-  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.nettoPrice]])]), _hoisted_6], 32 /* HYDRATE_EVENTS */);
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.premiumCalculator.yearProduction]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    type: "checkbox",
+    "onUpdate:modelValue": _cache[5] || (_cache[5] = function ($event) {
+      return $data.premiumCalculator.gpsIncluded = $event;
+    })
+  }, null, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelCheckbox, $data.premiumCalculator.gpsIncluded]])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", null, [_hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
+    name: "divide_in_installments",
+    "onUpdate:modelValue": _cache[6] || (_cache[6] = function ($event) {
+      return $data.premiumCalculator.divideInInstallments = $event;
+    })
+  }, _hoisted_8, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.premiumCalculator.divideInInstallments]]), $data.premiumCalculator.divideInInstallments == 1 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+    key: 0
+  }, [_hoisted_9, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("select", {
+    name: "rates_count",
+    "onUpdate:modelValue": _cache[7] || (_cache[7] = function ($event) {
+      return $data.premiumCalculator.countOfInstallments = $event;
+    })
+  }, _hoisted_12, 512 /* NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelSelect, $data.premiumCalculator.countOfInstallments]])], 64 /* STABLE_FRAGMENT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), $data.premiumCalculator.netPrice > 400000 ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, {
+    key: 0
+  }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" Nie obliczamy ")], 64 /* STABLE_FRAGMENT */)) : ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("button", _hoisted_13, "OBLICZ")), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("template", null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)(" WYNIK: " + (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.ocAcPrice), 1 /* TEXT */)])], 32 /* HYDRATE_EVENTS */);
 }
 
 /***/ }),
