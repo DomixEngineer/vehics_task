@@ -4,13 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Services\AcOcCalcService;
+use App\Http\Requests\CalculateAcOcRequest;
 
 class CalculationsController extends Controller {
 
-    protected $netValue;
-    protected $grossValue;
     protected $vat = 23;
-    protected $carYear;
 
     /**
      * Test method to testing API's
@@ -22,22 +20,18 @@ class CalculationsController extends Controller {
     /**
      * Netto to brutto calculations
      */
-    public function calculateNetToGross(Request $request) {
-        $grossValue = $request->input('netPrice') / (1 + ($this->vat / 100));
-        $this->grossValue = round($grossValue, 2);
-        return $this->grossValue;
+    public function calculateNetToGross(Request $request, AcOcCalcService $acOcCalcService) {
+        return $acOcCalcService->calculateNetToGross($request->input('netPrice'), $this->vat);
     }
 
     /**
      * Brutto to Netto calculations
      */
-    function calculateGrossToNet(Request $request) {
-        $netValue = $request->input('grossPrice') / (1 + ($this->vat / 100));
-        $this->netValue = round($netValue, 2);
-        return $this->netValue;
+    function calculateGrossToNet(Request $request, AcOcCalcService $acOcCalcService) {
+        return $acOcCalcService->calculateGrossToNet($request->input('grossPrice'), $this->vat);
     }
 
-    public function calculateAcOc(Request $request, AcOcCalcService $acOcCalcService) {
+    public function calculateAcOc(CalculateAcOcRequest $request, AcOcCalcService $acOcCalcService) {
 
         $results = [];
         $carNetValue = $request->input('netPrice');

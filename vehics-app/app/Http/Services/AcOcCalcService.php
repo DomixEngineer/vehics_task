@@ -4,6 +4,24 @@ namespace App\Http\Services;
 
 class AcOcCalcService {
 
+    /**
+     * Net to gross calculations
+     */
+    public function calculateNetToGross($netPrice, $vat) {
+        $grossValue = $netPrice / (1 + ($vat / 100));
+        $grossValue = round($grossValue, 2);
+        return $grossValue;
+    }
+
+    /**
+     * Gross to Netto calculations
+     */
+    function calculateGrossToNet($grossPrice, $vat) {
+        $netValue = $grossPrice / (1 + ($vat / 100));
+        $netValue = round($netValue, 2);
+        return $netValue;
+    }
+
     // Count ratio value of a car
     public function countRatioValue($carNetValue)
     {
