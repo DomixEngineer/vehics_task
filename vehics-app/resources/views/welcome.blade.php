@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="app">
-        <hello-vue />
+        <main-app-calculator />
     </div>
 </body>
 </html>

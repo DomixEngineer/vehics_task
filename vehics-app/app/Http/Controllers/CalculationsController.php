@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Services\AcOcCalcService;
+use App\Http\Requests\CalculateAcOcRequest;
 
 class CalculationsController extends Controller {
 
-    protected $netValue;
-    protected $grossValue;
     protected $vat = 23;
-    protected $carYear;
 
     /**
      * Test method to testing API's
@@ -21,23 +20,20 @@ class CalculationsController extends Controller {
     /**
      * Netto to brutto calculations
      */
-    public function calculateNetToGross(Request $request) {
-        $grossValue = $request->input('netPrice') / (1 + ($this->vat / 100));
-        $this->grossValue = round($grossValue, 2);
-        return $this->grossValue;
+    public function calculateNetToGross(Request $request, AcOcCalcService $acOcCalcService) {
+        return $acOcCalcService->calculateNetToGross($request->input('netPrice'), $this->vat);
     }
 
     /**
      * Brutto to Netto calculations
      */
-    function calculateGrossToNet(Request $request) {
-        $netValue = $request->input('grossPrice') / (1 + ($this->vat / 100));
-        $this->netValue = round($netValue, 2);
-        return $this->netValue;
+    function calculateGrossToNet(Request $request, AcOcCalcService $acOcCalcService) {
+        return $acOcCalcService->calculateGrossToNet($request->input('grossPrice'), $this->vat);
     }
 
-    public function calculateAcOc(Request $request) {
+    public function calculateAcOc(CalculateAcOcRequest $request, AcOcCalcService $acOcCalcService) {
 
+        $results = [];
         $carNetValue = $request->input('netPrice');
         $carGrossValue = $request->input('grossPrice');
         $carYearProduction = $request->input('yearProduction');
@@ -45,53 +41,49 @@ class CalculationsController extends Controller {
         $carDivideInInstallments = $request->input('divideInInstallments');
         $carCountOfInstallments = 0;
         $ratioValue = 0;
+
         if ($carDivideInInstallments == 1) {
             $carCountOfInstallments = $request->input('countOfInstallments');
         }
 
-        // Secure car over pricing
-        if ($carNetValue > 400000) {
-            return "Uwaga: samochód jest zbyt drogi, nie można wyliczyć składki."; 
-        }
-
-        // Set the proper car ratio value
-        if ($carNetValue < 40000) {
-            $ratioValue = 8;   // percentage value
-        } elseif ($carNetValue >= 40000 && $carNetValue < 100000) {
-            $ratioValue = 5; // percentage value
-        } elseif ($carNetValue >= 100000 && $carNetValue < 200000) {
-            $ratioValue = 4; // percentage value
-        } elseif ($carNetValue >= 200000 && $carNetValue < 400000) {
-            $ratioValue = 2; // percentage value
+        $ratioValue = $acOcCalcService->countRatioValue($carNetValue);
+        if (!$ratioValue) {
+            $results = [
+                'msg' => 'Samochód jest zbyt drogi, nie można wyliczyć składki.'
+            ];
+            return $results;
         }
         
         // Add ratio if car is used
-        if ($carYearProduction <= 2021) {
-            $ratioValue += 1;
-        }
+        $ratioValue = $acOcCalcService->incrementRatioIfCarIsOld($ratioValue, $carYearProduction);
 
         // Increment ratio if GPS has to be included
-        if ($carGpsIncluded) {
-            $ratioValue *= 1.11;
-        }
+        $ratioValue = $acOcCalcService->incrementRadioIfGpsIncluded($ratioValue, $carGpsIncluded);
 
         // contribution price
         $contributionPrice = round($carNetValue * $ratioValue / 100, 2);
 
-        // Count additional ratio value if rates are supposed to be
-        if ($carCountOfInstallments == 2) {
-            $contributionPrice *= 1.02;
-            $ratingPricing = 200;
-        } elseif ($carCountOfInstallments == 4) {
-            $contributionPrice *= 1.04;
-            $ratingPricing = 200;
-        } else {
-            $ratingPricing = 0;
-        }
+        // Rating pricing
+        $installmentsPricing = 0;
+
+        // Count additional ratio value if installments are supposed to be
+        $installmentsPricing = $acOcCalcService->countAdditionalRatioIfInstallments(
+            $carCountOfInstallments,
+            $contributionPrice,
+            $installmentsPricing,
+            'installment_pricing'
+        );
+
+        $contributionPrice = $acOcCalcService->countAdditionalRatioIfInstallments(
+            $carCountOfInstallments,
+            $contributionPrice,
+            $installmentsPricing,
+            'contribution_pricing'
+        );
 
         // Count the price of contribution rate
         if ($carCountOfInstallments > 1) {
-            $rateOfContributionPrice = round(($contributionPrice + $ratingPricing) / $carCountOfInstallments, 2);
+            $rateOfContributionPrice = round(($contributionPrice + $installmentsPricing) / $carCountOfInstallments, 2);
         } else {
             $rateOfContributionPrice = $contributionPrice;
         }
@@ -103,7 +95,7 @@ class CalculationsController extends Controller {
             'gps_included' => $carGpsIncluded,                          // Czy GPS ma być w samochodzie
             'ratio_value' => $ratioValue,                               // Współczynnik
             'contribution_price' => $contributionPrice,                 // Składka
-            'rating_pricing' => $ratingPricing,                         // Opłaty ratowe
+            'installments_pricing' => $installmentsPricing,             // Opłaty ratowe
             'count_of_installments' => $carCountOfInstallments,         // Liczba rat
             'rate_of_contribution_price' => $rateOfContributionPrice    // Rata składki
         ];
