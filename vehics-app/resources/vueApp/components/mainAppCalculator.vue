@@ -154,7 +154,7 @@
 import axios from 'axios';
 
 export default {
-    name: 'HelloVue',
+    name: 'mainAppCalculator',
     data() {
         return {
             ocAcPrice: '',
